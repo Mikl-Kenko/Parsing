@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>list</title>
+</head>
+    <nav><a href="{% url 'main:pars_user' %}"> Parsing </a></nav>
+<body>
+<div style="padding: 20px">
+    <table width="150 px">
+        <tr><th>USERNAME</th></tr>
+        {% for data in all_user %}
+        <tr>
+            <td><a href="{% url 'main:get_user' data.id %}">{{ data.username }}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>

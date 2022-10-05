@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>hello bro</title>
+</head>
+    <nav><a href="{% url 'main:list_user' %}">All users</a> <p id="num" style="color: white">  {{ all_user }}  </p></nav>
+    <br>
+<body style="padding: 20px">
+{% csrf_token %}
+
+    <h2> Динамический парсинг юзеров с <a href="https://jsonplaceholder.typicode.com/users" target="_blank"> РЕСУРСА </a>!</h2>
+    <input type="button" id="btn" value="Парсить..." style="height: 50px; width: 150px">
+
+<div style="display:flex; align-items:center;flex-wrap: nowrap; color: grey">
+    <div id="demo"></div>
+    <p id="root" style="padding: 20px"></p>
+</div>
+
+<script>
+    let root = document.querySelector('#root')
+    let btn = document.querySelector('#btn')
+    let demo = document.querySelector('#demo')
+    demo = Number(document.getElementById('num').textContent)
+    {#demo = 0#}
+    let pars_user
+    var csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value
+    btn.addEventListener('click', fn)
+
+        function fn(number) {
+        fetch('https://jsonplaceholder.typicode.com/users')
+            .then(response => response.json())
+            .then(data => {
+                console.log(demo)
+                console.log(data[demo])
+                pars_user = data[demo]
+                root.innerHTML = `<p> ${data[demo].name} </p>`
+            })
+            .catch((error) => {
+                root.innerHTML = `<h1>Всех спарсили!!!</h1>`
+                console.log("Всех спарсили!")
+            })
+            .then(fn => {
+            fetch("http://127.0.0.1:8000/pars/ajax/", {
+            method: "POST",
+            headers: {"X-CSRFToken" : csrftoken},
+            body: JSON.stringify({"data": pars_user}),
+            redirect: "follow"})
+                .then(response => response.json())
+                .then(data => {
+                    console.log("OK")
+                    })
+                .catch((error) => {
+                    alert('В базе есть такой USERS! Посмотри по списку:')
+                    window.location.href = "http://127.0.0.1:8000/pars/list_user/"
+
+                })
+                .then(new_func => {
+                demo += 1
+                document.getElementById("demo").innerHTML = demo
+                })
+            })
+        }
+</script>
+
+
+
+
+</body>
+</html>
