@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
 import json
-from .models import DataUser
+from .models import DataUser, AlbumUser
 
 
 def pars_user(request):
@@ -22,7 +22,8 @@ def ajax(request):
         user = data['data']
         # print(user)
         if DataUser.objects.filter(username=user['username']).count() == 0:
-            DataUser.objects.create(name=user['name'],username=user['username'],phone=user['phone'],address_city=user['address']['city'])
+            user = DataUser.objects.create(name=user['name'],username=user['username'],phone=user['phone'],address_city=user['address']['city'])
+            AlbumUser.pars_album_save(user)
             response = {'data': True}
             return JsonResponse(response)
         else:
