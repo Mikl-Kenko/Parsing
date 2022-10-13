@@ -1,3 +1,5 @@
+from datetime import time
+
 from django.db import models
 import requests
 
@@ -27,11 +29,36 @@ class AlbumUser(models.Model):
 
     @staticmethod
     def pars_album_save(user):
-        '''Функция парсит альбомы с ресурса и сохраняет Альбомы по полученному юзеру'''
+        '''Функция парсит альбомы с ресурса и сохраняет Альбомы по полученному user'''
         id = DataUser.objects.get(name=user.name)
-        print(user.name,'is id =', id.id)
-        URL_TEMPLATE = 'https://jsonplaceholder.typicode.com/albums'
+        URL_TEMPLATE = f'https://jsonplaceholder.typicode.com/albums/?userId={id.id}'
         data = requests.get(URL_TEMPLATE)
         for album in data.json():
-            if album['userId'] == user.id:
-                user.albumuser_set.create(title=album['title'])
+            user.albumuser_set.create(title=album['title'])
+
+
+class PhotoAlbumUser(models.Model):
+    album = models.ForeignKey(AlbumUser, on_delete=models.CASCADE)
+    title = models.CharField('Название', max_length=150, blank=True, null=True)
+    url = models.URLField('Ссылка')
+    thumbnailUrl = models.URLField('Ссылка эскиза')
+
+    class Meta:
+        verbose_name = 'Photo'
+        verbose_name_plural = 'Photos'
+
+    def __str__(self):
+        return self.title
+
+    @staticmethod
+    def pars_photo_save(user):
+        '''Функция парсит фото с ресурса и сохраняет в БД по полученному Альбому'''
+        Albums_user = DataUser.objects.get(name=user.name).albumuser_set.all()
+        for album in Albums_user:
+            URL_TEMPLATE = f'https://jsonplaceholder.typicode.com/photos/?albumId={album.id}'
+            data = requests.get(URL_TEMPLATE)
+            photo_set = []
+            for photo in data.json():
+                photo_set.append(PhotoAlbumUser(album=album,title=photo['title'], url=photo['url'], thumbnailUrl=photo['thumbnailUrl']))
+            PhotoAlbumUser.objects.bulk_create(photo_set)
+
